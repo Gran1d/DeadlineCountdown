@@ -1,0 +1,74 @@
+@startuml
+package "App Layer" {
+    [DeadlineCountdownApp] <<App>>
+}
+
+package "UI Layer (SwiftUI Views)" {
+    [DeadlineListView] <<View>>
+    [AddDeadlineView] <<View>>
+    [ArchivedDeadlineListView] <<View>>
+    [DeadlineRowView] <<View>>
+    [TodoListView] <<View>>
+}
+
+package "Logic Layer (MVVM ViewModels)" {
+    [DeadlineListViewModel] <<ViewModel>>
+}
+
+package "Services (Singletons)" {
+    [PersistenceController] <<Service>>
+    [TimerService] <<Service>>
+    [NotificationService] <<Service>>
+    [FeedbackManager] <<Service>>
+    [AppMetrics] <<Service>>
+}
+
+package "Data Layer (Core Data Models)" {
+    [DeadlineEntity] <<Entity>>
+    [TodoItemEntity] <<Entity>>
+}
+
+package "Utils" {
+    [DateExtensions] <<Helper>>
+    [MemoryMetrics] <<Helper>>
+}
+
+' Relationships
+[DeadlineCountdownApp] --> [PersistenceController] : initializes Core Data stack
+[DeadlineCountdownApp] --> [NotificationService] : requestPermission()
+[DeadlineCountdownApp] --> [TimerService] : start timer publisher
+
+[DeadlineListView] --> [DeadlineListViewModel] : observes (@StateObject)
+[AddDeadlineView] --> [DeadlineListViewModel] : binds (create/edit)
+[ArchivedDeadlineListView] --> [DeadlineListViewModel] : binds (read/archive)
+[TodoListView] --> [DeadlineListViewModel] : binds todos
+
+[DeadlineListViewModel] --> [PersistenceController] : uses managedObjectContext
+[DeadlineListViewModel] --> [NotificationService] : schedule/cancel notifications
+[DeadlineListViewModel] --> [TimerService] : subscribes to currentDate publisher
+[DeadlineListViewModel] --> [AppMetrics] : logError / metrics events
+[DeadlineListViewModel] --> [FeedbackManager] : trigger haptics / feedback
+[DeadlineListViewModel] --> [DateExtensions] : date helpers
+
+[TimerService] --> [DeadlineListViewModel] : publishes currentDate
+[PersistenceController] --> [DeadlineEntity] : manages entities
+[PersistenceController] --> [TodoItemEntity] : manages entities
+[NotificationService] --> "iOS UserNotifications" : schedules system notifications
+
+[AppMetrics] --> [MemoryMetrics] : samples memory for metrics
+
+[DeadlineCountdownApp] --> [DeadlineListView] : shows root view
+[DeadlineListView] --> [DeadlineRowView] : renders rows for each DeadlineEntity
+[DeadlineRowView] --> [DeadlineListViewModel] : actions (toggle/delete)
+
+note right of [DeadlineListViewModel]
+archivePastDeadlines() triggered by TimerService
+context.perform { ... } used for thread-safety on deletes
+PersistenceController supports inMemory mode for tests
+end note
+
+note left of [NotificationService]
+schedules local notifications when deadlines added/updated
+end note
+
+@enduml
