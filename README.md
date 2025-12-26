@@ -26,11 +26,10 @@
 - [DeadlineCountdownTests/DeadlineCountdownTests.swift](DeadlineCountdownTests/DeadlineCountdownTests.swift) — unit-тесты
 
 **Как запустить проект**
-1. Откройте `DeadlineCountdown.xcodeproj` в Xcode:
 
-```bash
-open DeadlineCountdown.xcodeproj
-```
+1. Клонировать данный репозиторий
+
+2. Оnкрыть проект при помощи Xcode
 
 2. Выберите подходующую схему и запустите на симуляторе или устройстве.
 
