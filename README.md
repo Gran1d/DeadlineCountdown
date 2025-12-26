@@ -15,7 +15,7 @@
 
 **Требования**
 - Xcode 15 или новее
-- iOS 16+ (зависит от настроек проекта)
+- iOS 26.2
 
 **Структура проекта (важные файлы и каталоги)**
 - [DeadlineCountdownApp.swift](DeadlineCountdownApp.swift) — точка входа приложения
@@ -34,14 +34,6 @@ open DeadlineCountdown.xcodeproj
 
 2. Выберите подходующую схему и запустите на симуляторе или устройстве.
 
-3. Для быстрого запуска из командной строки можно использовать `xcodebuild` (пример):
-
-```bash
-xcodebuild test -project DeadlineCountdown.xcodeproj -scheme DeadlineCountdown -destination 'platform=iOS Simulator,name=iPhone 14'
-```
-
-Примечание: команда выше запускает тесты; для простого билда/запуска используйте `xcodebuild -project ... -scheme ... build`.
-
 **Тестирование**
 - Проект содержит модульные тесты в `DeadlineCountdownTests`. Тесты используют in-memory `NSPersistentContainer`, поэтому они не затрагивают реальное хранилище.
 - Запуск тестов в Xcode: меню Product → Test (или Cmd+U).
@@ -52,12 +44,5 @@ xcodebuild test -project DeadlineCountdown.xcodeproj -scheme DeadlineCountdown -
 - `TimerService` обновляет текущую дату каждую секунду; в тестах таймер останавливается для детерминированности.
 - `NotificationService` отвечает за планирование локальных уведомлений.
 
-**Как внести изменения**
-1. Создавайте новые тесты для логики, прежде чем менять поведение.
-2. Используйте `PersistenceController(inMemory: true)` в тестах для изоляции.
-
 **Контакты и вклад**
-Если хотите, я могу помочь добавить CI для автоматического запуска тестов (GitHub Actions), или оформить CONTRIBUTING.md — скажите, что предпочитаете.
-
----
-Лицензия: укажите лицензию проекта по желанию (например, MIT).
+Сиротин Артём - почта: aisirotin@edu.hse.ru
