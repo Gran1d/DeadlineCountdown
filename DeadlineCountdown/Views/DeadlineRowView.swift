@@ -12,10 +12,14 @@ struct DeadlineRowView: View {
                 Text(timeString(for: deadline))
                     .font(.subheadline)
                     .foregroundColor(color(for: deadline))
+                Text(taskProgress(for: deadline))
+                    .font(.caption)
+                    .foregroundColor(taskProgressColor(for: deadline))
             }
             Spacer()
         }
         .padding(.vertical, 4)
+        
     }
     
     private func timeString(for deadline: DeadlineEntity) -> String {
@@ -36,4 +40,28 @@ struct DeadlineRowView: View {
         default: return .green
         }
     }
+    
+    private func taskProgress(for deadline: DeadlineEntity) -> String {
+        let todos = viewModel.todos(for: deadline)
+        guard !todos.isEmpty else { return "No tasks" }
+        let completed = todos.filter { $0.isCompleted }.count
+        return "\(completed) / \(todos.count) tasks"
+    }
+
+    private func taskProgressColor(for deadline: DeadlineEntity) -> Color {
+        let todos = viewModel.todos(for: deadline)
+        guard !todos.isEmpty else { return .secondary }
+        let completed = todos.filter { $0.isCompleted }.count
+
+        let progress = Double(completed) / Double(todos.count)
+        switch progress {
+        case 1.0:
+            return .green
+        case 0.5...:
+            return .orange
+        default:
+            return .red
+        }
+    }
+
 }

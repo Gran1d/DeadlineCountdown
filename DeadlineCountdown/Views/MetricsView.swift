@@ -7,7 +7,6 @@ import Foundation
 struct MetricsView: View {
 
     @StateObject private var viewModel = DeadlineListViewModel()
-    @State private var sessionStart = Date()
     @State private var sessionLength: TimeInterval = 0
     @State private var showFeedbackSheet = false
 
@@ -50,10 +49,26 @@ struct MetricsView: View {
                         showFeedbackSheet = true
                     }
                 }
+                
+                Section("Task Metrics") {
+                    Text("Total tasks: \(viewModel.totalTodoCount())")
+                    Text("Completed tasks: \(viewModel.completedTodoCount())")
+
+                    let total = viewModel.totalTodoCount()
+                    if total > 0 {
+                        let percent = Int(Double(viewModel.completedTodoCount()) / Double(total) * 100)
+                        Text("Completion rate: \(percent)%")
+                    }
+
+                    Text("Deadlines with 100% tasks done: \(viewModel.deadlinesWithAllTasksCompleted())")
+                }
+
             }
             .navigationTitle("App Metrics")
+            .onReceive(TimerService.shared.$currentDate) { date in
+                sessionLength = date.timeIntervalSince(DeadlineCountdownApp.appLaunchTime)
+            }
             .onAppear {
-                sessionStart = Date()
                 // Автопоказ Feedback после добавления дедлайна
                 print("Has user provided feedback? \(FeedbackManager.hasProvidedFeedback)")
                 viewModel.onDeadlineAdded = {
@@ -61,9 +76,6 @@ struct MetricsView: View {
                         showFeedbackSheet = true
                     }
                 }
-            }
-            .onDisappear {
-                sessionLength = Date().timeIntervalSince(sessionStart)
             }
             .sheet(isPresented: $showFeedbackSheet) {
                 FeedbackView { rating, text in
