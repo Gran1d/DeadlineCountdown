@@ -50,6 +50,20 @@ struct MetricsView: View {
                         showFeedbackSheet = true
                     }
                 }
+                
+                Section("Task Metrics") {
+                    Text("Total tasks: \(viewModel.totalTodoCount())")
+                    Text("Completed tasks: \(viewModel.completedTodoCount())")
+
+                    let total = viewModel.totalTodoCount()
+                    if total > 0 {
+                        let percent = Int(Double(viewModel.completedTodoCount()) / Double(total) * 100)
+                        Text("Completion rate: \(percent)%")
+                    }
+
+                    Text("Deadlines with 100% tasks done: \(viewModel.deadlinesWithAllTasksCompleted())")
+                }
+
             }
             .navigationTitle("App Metrics")
             .onAppear {

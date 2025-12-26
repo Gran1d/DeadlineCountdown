@@ -8,7 +8,11 @@ struct ArchivedDeadlineListView: View {
         NavigationStack {
             List {
                 ForEach(viewModel.archivedDeadlines(), id: \.id) { deadline in
-                    DeadlineRowView(deadline: deadline, viewModel: viewModel)
+                    NavigationLink {
+                        AddDeadlineView(viewModel: viewModel, deadlineToEdit: deadline)
+                    } label: {
+                        DeadlineRowView(deadline: deadline, viewModel: viewModel)
+                    }
                 }
                 .onDelete { indexSet in
                     indexSet.forEach { viewModel.removeDeadline(viewModel.archivedDeadlines()[ $0 ]) }

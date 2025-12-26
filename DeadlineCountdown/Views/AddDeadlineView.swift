@@ -29,6 +29,10 @@ struct AddDeadlineView: View {
                 Stepper(value: $remindBefore, in: 0...1440, step: 5) {
                     Text("Напомнить за \(remindBefore) минут")
                 }
+                if let edit = deadlineToEdit {
+                    TodoListView(deadline: edit, viewModel: viewModel)
+                }
+
             }
             .navigationTitle(deadlineToEdit == nil ? "New Deadline" : "Edit Deadline")
             .toolbar {

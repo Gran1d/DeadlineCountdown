@@ -79,19 +79,28 @@ final class DeadlineListViewModel: ObservableObject {
     
     // MARK: - Delete
     func removeDeadline(_ deadline: DeadlineEntity) {
-        context.delete(deadline)
-        saveContext()
+        context.performAndWait {
+            context.delete(deadline)
+            saveContext()
+        }
     }
     
     // MARK: - Archive past
     func archivePastDeadlines() {
-        for deadline in deadlines {
-            if let due = deadline.dueDate, due <= currentDate, !deadline.isArchived {
+        var hasChanges = false
+
+        for deadline in deadlines where !deadline.isArchived {
+            if let due = deadline.dueDate, due <= currentDate {
                 deadline.isArchived = true
+                hasChanges = true
             }
         }
-        saveContext()
+
+        if hasChanges {
+            saveContext()
+        }
     }
+
     
     // MARK: - Helpers
     func activeDeadlines() -> [DeadlineEntity] {
@@ -106,6 +115,60 @@ final class DeadlineListViewModel: ObservableObject {
         guard let dueDate = deadline.dueDate else { return 0 }
         return max(dueDate.timeIntervalSince(currentDate), 0)
     }
+    
+    // MARK: - Todo logic
+
+    func todos(for deadline: DeadlineEntity) -> [TodoItemEntity] {
+        let set = deadline.todos as? Set<TodoItemEntity> ?? []
+        return set.sorted {
+            ($0.createdAt ?? Date()) < ($1.createdAt ?? Date())
+        }
+    }
+
+    func addTodo(to deadline: DeadlineEntity, title: String) {
+        let todo = TodoItemEntity(context: context)
+        todo.id = UUID()
+        todo.title = title
+        todo.isCompleted = false
+        todo.createdAt = Date()
+        todo.deadline = deadline
+
+        saveContext()
+    }
+
+    func toggleTodo(_ todo: TodoItemEntity) {
+        todo.isCompleted.toggle()
+        saveContext()
+    }
+
+    func removeTodo(_ todo: TodoItemEntity) {
+        context.delete(todo)
+        saveContext()
+    }
+    
+    // MARK: - Todo metrics
+
+    func totalTodoCount() -> Int {
+        deadlines.reduce(0) {
+            $0 + ( ($1.todos as? Set<TodoItemEntity>)?.count ?? 0 )
+        }
+    }
+
+    func completedTodoCount() -> Int {
+        deadlines.reduce(0) {
+            let todos = ($1.todos as? Set<TodoItemEntity>) ?? []
+            return $0 + todos.filter { $0.isCompleted }.count
+        }
+    }
+
+    func deadlinesWithAllTasksCompleted() -> Int {
+        deadlines.filter { deadline in
+            let todos = (deadline.todos as? Set<TodoItemEntity>) ?? []
+            return !todos.isEmpty && todos.allSatisfy { $0.isCompleted }
+        }.count
+    }
+
+
     
     // MARK: - Save context
     private func saveContext() {
